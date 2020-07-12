@@ -1,0 +1,43 @@
+This directory houses a code that verifies the MCC3s by comparing energies calculated by them
+against energies calculated by whatever LAMMPS potential they were produced with. 
+
+BEFORE RUNNING,
+mkdir debug_in
+mkdir debug_ifc2mcc
+
+verify with:
+
+./geo verify random 5 0.1 10101 MCC3_REF
+
+to verify against random 5 configs, 0.1 atomic displacement magnitude, 10101 random seed, and MCC3_REF filename
+
+Do finite difference (for IFCs) with (e.g.):
+
+mpirun -np 2 fcfd fd 0.1 4 
+
+where 0.1 is stepsize, and 4 is the order.
+
+Then do an ASR correction to 2nd order:
+
+./fcfd asr 2
+
+which creates FC2_ASR.
+
+To convert IFCs to MCCs up to 3rd order, for 8 atom system:
+
+    fcfd ifc2mcc 0 3 # This is 0 for converting, and 3 for order
+    NOTE: You must make /mcc3 and /mcc4 folders so that the program can write files in these folders!
+
+To extract MCC3s from the /mcc3 directory, do:
+
+    fcfd ifc2mcc 1 lowmode highmode
+    # "lowmode" and "highmode" are the intervals of modes to extract. Could possibly add a list later. 
+
+To calculate PR of an 8 atom system (requires EMAT):
+    fcfd compute pr 8
+
+To average MCC3s of modes i, from a list of modes i, do:
+
+    fcfd ifc2mcc 2
+
+and make sure you have an ILIST file full of modes i that you want to average MCC3 tensors for.
